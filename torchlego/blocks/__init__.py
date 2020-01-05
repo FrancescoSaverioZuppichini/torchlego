@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from functools import partial
-
+from .VisionModule import VisionModule
 
 class Lambda(nn.Module):
     def __init__(self, lambd):
@@ -30,7 +30,7 @@ class Conv2dPad(nn.Conv2d):
             self.padding = (self.kernel_size[0] // 2, self.kernel_size[1] // 2)
 
 
-def conv_bn(in_channels: int, out_channels:int, *args, conv=Conv2dPad, **kwargs):
+def conv_bn(in_channels: int, out_channels:int, *args, conv=nn.Conv2d, **kwargs):
     """
     Combines a conv layer with a batchnorm layer. 
     Useful to code faster and increases readibility. 
@@ -52,7 +52,7 @@ def conv_bn(in_channels: int, out_channels:int, *args, conv=Conv2dPad, **kwargs)
     )
 
 
-def conv_bn_act(*args, act=nn.ReLU(), **kwargs):
+def conv_bn_act(*args, act=nn.ReLU, **kwargs):
     """
     Combines a conv layer, a batchnorm layer and an activation. 
     Useful to code faster and increases readibility. 
@@ -62,14 +62,15 @@ def conv_bn_act(*args, act=nn.ReLU(), **kwargs):
     :return: [description]
     :rtype: [type]
     """
+    # TODO if act is None -> ReLU
     return nn.Sequential(
         *conv_bn(*args, **kwargs),
-        act
+        act()
     )
 
 
-conv1x1 = partial(Conv2dPad, kernel_size=1)
-conv3x3 = partial(Conv2dPad, kernel_size=3)
+conv1x1 = partial(nn.Conv2d, kernel_size=1)
+conv3x3 = partial(nn.Conv2d, kernel_size=3)
 conv3x3_bn = partial(conv_bn, conv=conv3x3)
 conv3x3_bn_act = partial(conv_bn_act, conv=conv3x3)
 
@@ -97,18 +98,20 @@ class Residual(nn.Module):
                 residuals = [None] * len(block)
                 for res, layer in zip(residuals, block):
                     if res is not None:
-                        res = self.shortcut(res)
+                        if self.shortcut is not None:
+                            res = self.shortcut(res)
                         x = self.res_func(x, res)
                         x = layer(x)
                     res.append(x)
             else:
                 res = x
                 x = block(x)
-                res = self.shortcut(res)
+                if self.shortcut is not None:
+                    res = self.shortcut(res)
                 x = self.res_func(x, res)
         return x
 
 
-Add = partial(Residual, mode='add')
-Cat = partial(Residual, mode='cat')
-Cat2d = partial(Residual, mode='cat', dim=1)
+ResidualAdd = partial(Residual, mode='add')
+ResidualCat = partial(Residual, mode='cat')
+ResidualCat2d = partial(Residual, mode='cat', dim=1)

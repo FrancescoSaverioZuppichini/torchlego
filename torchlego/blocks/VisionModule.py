@@ -1,6 +1,7 @@
-from torch.nn as nn
+import torch
+import torch.nn as nn
 from pathlib import Path
-
+from torchsummary import summary
 
 class VisionModule(nn.Module):
     def __init__(self, *args, **kwargs):
@@ -12,6 +13,10 @@ class VisionModule(nn.Module):
         x = self.encoder(x)
         x = self.decoder(x)
         return x
+
+    def summary(self, input_shape=(3, 224, 224)):
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        return summary(self.to(device), input_shape)
 
     @classmethod
     def from_pretrain(cls, *args, **kwargs):
