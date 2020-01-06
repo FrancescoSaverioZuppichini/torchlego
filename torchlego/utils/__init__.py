@@ -36,10 +36,11 @@ class ModuleTransfer:
         for dest_m, src_m in zip(dest_traced, src_traced):
             dest_m.load_state_dict(src_m.state_dict())
             print(f'Transfered from={src_m} to={dest_m}')
-            # print(dest_m, src)
-            for key in dest_m.state_dict().keys():
+            for key in src_m.state_dict().keys():
                 assert dest_m.state_dict()[key].sum() == src_m.state_dict()[key].sum()
-
+                
+        print('=======================================================')
+        
         for dest_m, src_m in zip(dest_traced, src_traced):
             print(dest_m)
             for key in dest_m.state_dict().keys():
