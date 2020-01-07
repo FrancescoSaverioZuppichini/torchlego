@@ -6,8 +6,6 @@ from torchsummary import summary
 class VisionModule(nn.Module):
     def __init__(self, *args, **kwargs):
         super().__init__()
-        self.encoder: nn.Module = None
-        self.decoder: nn.Module = None
 
     def forward(self, x):
         x = self.encoder(x)
