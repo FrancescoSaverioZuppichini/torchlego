@@ -74,23 +74,31 @@ conv3x3 = partial(nn.Conv2d, kernel_size=3)
 conv3x3_bn = partial(conv_bn, conv=conv3x3)
 conv3x3_bn_act = partial(conv_bn_act, conv=conv3x3)
 
-class Residual(nn.Module):
-    ADD = 'add'
-    CAT = 'cat'
-
-    def __init__(self, blocks, mode='add', shortcut=nn.Identity(), res_func=None, *args, **kwargs):
+class Cat(nn.Module):
+    """
+    Simply concat all the outputs from the `.blocks` modules.
+    """
+    def __init__(self, blocks, *args, **kwargs):
         super().__init__()
         self.blocks = blocks
-        self.shortcut = shortcut
-        if res_func is not None:
-            self.res_func = res_func
-        else:
-            if mode == Residual.ADD:
-                self.res_func = lambda x, res: x + res
-            elif mode == Residual.CAT:
-                self.res_func = lambda x, res: torch.cat(
-                    [res, x], *args, **kwargs)
+        self.cat = partial(torch.cat, *args, **kwargs)
+        
+    def forward(self, x):
+        res =  []
+        for block in self.blocks:
+            out = block(x)
+            res.append(out)
+            
+        return self.cat(res)
 
+class Residual(nn.Module):
+
+    def __init__(self, blocks, res_func:callable, shortcut:nn.Module=nn.Identity(), *args, **kwargs):
+        super().__init__()
+        self.blocks = blocks if type(blocks) is list or type(blocks) is nn.ModuleList else [blocks]
+        self.shortcut = shortcut
+        self.res_func = res_func
+   
     def forward(self, x):
         for block in self.blocks:
             block_type = type(block)
@@ -112,6 +120,6 @@ class Residual(nn.Module):
         return x
 
 
-ResidualAdd = partial(Residual, mode='add')
-ResidualCat = partial(Residual, mode='cat')
-ResidualCat2d = partial(Residual, mode='cat', dim=1)
+ResidualAdd = partial(Residual, res_func=lambda x, res: x + res)
+ResidualCat = partial(Residual, res_func=lambda x, res: torch.cat([x, res]))
+ResidualCat2d = partial(ResidualCat, dim=1)
