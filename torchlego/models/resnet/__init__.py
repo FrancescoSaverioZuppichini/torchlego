@@ -88,7 +88,7 @@ class ResNetHead(nn.Module):
         self.blocks = nn.Sequential(
             nn.Conv2d(in_features,
                       out_features,
-                      kernel_size=7,
+                      kernel_size=7,2
                       stride=2,
                       padding=3,
                       bias=False),

@@ -93,33 +93,43 @@ class Cat(nn.Module):
 
 class Residual(nn.Module):
 
-    def __init__(self, blocks, res_func:callable, shortcut:nn.Module=nn.Identity(), *args, **kwargs):
+    def __init__(self, blocks, res_func:callable=None, shortcut:nn.Module=nn.Identity(), *args, **kwargs):
         super().__init__()
         self.blocks = blocks if type(blocks) is list or type(blocks) is nn.ModuleList else [blocks]
         self.shortcut = shortcut
         self.res_func = res_func
    
     def forward(self, x):
+        residuals = [None] * (len(self.blocks[0]))
         for block in self.blocks:
             block_type = type(block)
             if block_type is nn.ModuleList:
-                residuals = [None] * len(block)
-                for res, layer in zip(residuals, block):
+                residuals = residuals[:len(block)]
+                residuals.reverse()
+                for i, layer in enumerate(block):
+                    res = residuals[i]
                     if res is not None:
                         if self.shortcut is not None:
                             res = self.shortcut(res)
-                        x = self.res_func(x, res)
+                        if self.res_func is not None:
+                            x = self.res_func(x, res)
+                        else: 
+                            x = layer(x, res)
+                    else:
                         x = layer(x)
-                    res.append(x)
+                    residuals[i] = x
+
             else:
                 res = x
                 x = block(x)
                 if self.shortcut is not None:
                     res = self.shortcut(res)
                 x = self.res_func(x, res)
+        print([res.shape[1] for res in residuals])
+
         return x
 
 
 ResidualAdd = partial(Residual, res_func=lambda x, res: x + res)
 ResidualCat = partial(Residual, res_func=lambda x, res: torch.cat([x, res]))
-ResidualCat2d = partial(ResidualCat, dim=1)
+ResidualCat2d = partial(ResidualCat, res_func=lambda x, res: torch.cat([x, res], dim=1))
