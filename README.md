@@ -1,6 +1,8 @@
 
 # torchlego 
 
+**This is a super early preview**
+
 High quality Neural Networks built with reausable blocks in PyTorch
 
 ![alt](https://raw.githubusercontent.com/FrancescoSaverioZuppichini/torchlego/develop/doc/images/lego.jpg)
@@ -242,6 +244,10 @@ res(x)
 
 ![alt](https://github.com/FrancescoSaverioZuppichini/torchlego/blob/develop/doc/images/Residual_blocks_no_last2.png?raw=true)
 
+#### Addition
+
+`torchlego` comes with an useful `ResidualAdd` block that is just a `Residual` that performs automatically addition
+
 
 ```python
 import torch
@@ -250,6 +256,13 @@ from torchlego.blocks import ResidualAdd, Lambda
 layer = ResidualAdd([Lambda(lambda x: x)])
 layer(torch.tensor([1]))
 ```
+
+
+
+
+    tensor([2])
+
+
 
 A more complete example
 
@@ -279,6 +292,13 @@ layer = ResidualAdd(blocks)
 layer(torch.tensor(1))
 ```
 
+
+
+
+    tensor(4)
+
+
+
 ![alt](https://github.com/FrancescoSaverioZuppichini/torchlego/blob/develop/doc/images/Add_blocks.png?raw=true)
 
 Let's create a basic [ResNet](https://arxiv.org/abs/1512.03385) block
@@ -301,6 +321,34 @@ def resnet_basic_block(in_features, out_features):
     
 resnet_basic_block(32, 64)
 ```
+
+
+
+
+    Sequential(
+      (0): Residual(
+        (blocks): ModuleList(
+          (0): Sequential(
+            (0): Sequential(
+              (0): Conv2d(32, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+              (1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): ReLU()
+            )
+            (1): Sequential(
+              (0): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            )
+          )
+        )
+        (shortcut): Sequential(
+          (0): Conv2d(32, 64, kernel_size=(1, 1), stride=(2, 2), bias=False)
+          (1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      (1): ReLU()
+    )
+
+
 
 ![alt](https://github.com/FrancescoSaverioZuppichini/torchlego/blob/develop/doc/images/Add_resnet.png?raw=true)
 
@@ -332,9 +380,18 @@ resnet34 = resnet(3, 1000, [3, 4, 6, 3])
 resnet34(x).shape
 ```
 
+
+
+
+    torch.Size([1, 1000])
+
+
+
 ![alt](https://www.researchgate.net/profile/Aaron_Vose/publication/330400293/figure/fig6/AS:715395283558403@1547574935970/ResNet-neural-network-architecture-ResNet-34-pictured-image-from-11.ppm)
 
 ### Unet
+
+What about Unet?
 
 
 ```python
@@ -362,7 +419,6 @@ class up(nn.Module):
 
     def forward(self, x, res):
         if self.should_up: x = self.up(x)
-        print(res.shape)
             
         diffX = x.size()[2] - res.size()[2]
         diffY = x.size()[3] - res.size()[3]
@@ -401,11 +457,23 @@ unet(x)
 ```
 
 
-```python
-
-```
 
 
-```python
+    tensor([[[[-0.0337,  0.0024, -0.1101,  ..., -0.0187,  0.0617, -0.0375],
+              [-0.0373,  0.0014,  0.0675,  ..., -0.0321, -0.0918, -0.0332],
+              [-0.0825, -0.0653, -0.2176,  ...,  0.0185,  0.0397, -0.1025],
+              ...,
+              [-0.0380, -0.0662, -0.0273,  ..., -0.1243,  0.0559, -0.1122],
+              [-0.0540, -0.1246,  0.1059,  ..., -0.1924, -0.0543, -0.1282],
+              [-0.0344, -0.0334, -0.0837,  ..., -0.0204, -0.0412, -0.0365]],
+    
+             [[-0.0266, -0.0266, -0.1072,  ..., -0.0541, -0.0967,  0.0872],
+              [ 0.0730, -0.0539, -0.1752,  ...,  0.0532, -0.0451, -0.0034],
+              [ 0.0388,  0.0368, -0.0284,  ...,  0.0061,  0.1027,  0.0601],
+              ...,
+              [ 0.0373,  0.0447,  0.2387,  ..., -0.0480, -0.0100,  0.0806],
+              [ 0.0307,  0.1290,  0.0912,  ...,  0.1114,  0.0170,  0.1108],
+              [ 0.0328,  0.0372,  0.0433,  ...,  0.0872,  0.1540,  0.0956]]]],
+           grad_fn=<MkldnnConvolutionBackward>)
 
-```
+
