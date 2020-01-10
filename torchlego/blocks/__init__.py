@@ -100,10 +100,11 @@ class Residual(nn.Module):
         self.res_func = res_func
    
     def forward(self, x):
-        residuals = [None] * (len(self.blocks[0]))
+        residuals = None
         for block in self.blocks:
             block_type = type(block)
             if block_type is nn.ModuleList:
+                if residuals is None: residuals = [None] * (len(self.blocks[0]))
                 residuals = residuals[:len(block)]
                 residuals.reverse()
                 for i, layer in enumerate(block):
@@ -125,7 +126,6 @@ class Residual(nn.Module):
                 if self.shortcut is not None:
                     res = self.shortcut(res)
                 x = self.res_func(x, res)
-        print([res.shape[1] for res in residuals])
 
         return x
 
