@@ -1,7 +1,7 @@
 
 # torchlego 
 
-**This is a super early preview**
+**This is a early preview**
 
 High quality Neural Networks built with reausable blocks in PyTorch
 
@@ -9,7 +9,15 @@ High quality Neural Networks built with reausable blocks in PyTorch
 
 *Photo by Ryan Quintal on Unsplash*
 
+## Motivation
+
+This library aims to create new components to make developing and writing neural networks faster and easier.
+
 ## Installation
+
+### pip
+
+- [ ] TODO
 
 ## Quick Tour
 
@@ -186,6 +194,8 @@ res(x)
 
 ![alt](https://github.com/FrancescoSaverioZuppichini/torchlego/blob/develop/doc/images/Residual_shorcut.png?raw=true)
 
+You can also not pass the `.res_func`, in that case the residual will be passed as second parameter to the `blocks`.
+
 #### Multiple lever residuals
 
 If you pass an array of `nn.ModuleList`, we assume you want to pass residual trought each respective layer. In the following example all the `A` layer just compute input + 1 the input while the `B` layers add the residual with the current input. Notice that the `B.forward` function takes as second argument the residual.
@@ -217,7 +227,7 @@ res(x)
 
 ![alt](https://github.com/FrancescoSaverioZuppichini/torchlego/blob/develop/doc/images/Residual_blocks.png?raw=true)
 
-It you don't want to pass the residual in the last layer, you can just include the first `B` inside the left blocks. Be sure to handle the case where the residual is None!
+Be awere that only the first `n` residuals will be passed, where `n` is the len of the second blocks. I know, it sound confusing, but let's see an example.
 
 
 ```python
@@ -229,7 +239,7 @@ class B(nn.ModuleList):
         x = x if res is None else x + res
         return x 
         
-down = nn.ModuleList([A(), A(), B()])
+down = nn.ModuleList([A(), A()])
 up = nn.ModuleList([B()])
 res = Residual([down, up])
 res(x)
@@ -459,21 +469,32 @@ unet(x)
 
 
 
-    tensor([[[[-0.0337,  0.0024, -0.1101,  ..., -0.0187,  0.0617, -0.0375],
-              [-0.0373,  0.0014,  0.0675,  ..., -0.0321, -0.0918, -0.0332],
-              [-0.0825, -0.0653, -0.2176,  ...,  0.0185,  0.0397, -0.1025],
+    tensor([[[[ 8.8137e-02,  3.6018e-02,  3.6493e-02,  ..., -8.1409e-02,
+               -1.0382e-01, -3.2821e-02],
+              [-6.6964e-02, -2.5947e-02,  6.4162e-02,  ...,  1.5033e-01,
+               -7.9811e-02, -1.8225e-02],
+              [ 1.4054e-01, -1.9263e-02, -7.7571e-02,  ..., -7.0426e-03,
+               -1.0605e-01, -1.3636e-01],
               ...,
-              [-0.0380, -0.0662, -0.0273,  ..., -0.1243,  0.0559, -0.1122],
-              [-0.0540, -0.1246,  0.1059,  ..., -0.1924, -0.0543, -0.1282],
-              [-0.0344, -0.0334, -0.0837,  ..., -0.0204, -0.0412, -0.0365]],
+              [ 7.7351e-02, -1.5599e-02,  1.2618e-01,  ...,  2.8263e-02,
+                3.2247e-02,  2.6603e-02],
+              [ 9.9938e-02, -1.0595e-01, -5.5370e-02,  ...,  5.1364e-03,
+                1.1270e-01, -7.0449e-02],
+              [ 1.1673e-01,  1.1466e-01,  9.6519e-02,  ...,  2.0525e-01,
+               -4.1448e-03, -1.7874e-04]],
     
-             [[-0.0266, -0.0266, -0.1072,  ..., -0.0541, -0.0967,  0.0872],
-              [ 0.0730, -0.0539, -0.1752,  ...,  0.0532, -0.0451, -0.0034],
-              [ 0.0388,  0.0368, -0.0284,  ...,  0.0061,  0.1027,  0.0601],
+             [[-1.1501e-01, -7.1215e-02, -9.0835e-02,  ...,  2.8257e-02,
+               -9.3994e-02, -5.7923e-02],
+              [-5.4163e-02, -9.5989e-02,  1.5962e-02,  ..., -6.1023e-02,
+               -1.2532e-01, -1.2940e-01],
+              [ 9.8738e-02, -4.5944e-02, -9.7948e-02,  ..., -6.3290e-02,
+               -1.7416e-01, -7.3600e-02],
               ...,
-              [ 0.0373,  0.0447,  0.2387,  ..., -0.0480, -0.0100,  0.0806],
-              [ 0.0307,  0.1290,  0.0912,  ...,  0.1114,  0.0170,  0.1108],
-              [ 0.0328,  0.0372,  0.0433,  ...,  0.0872,  0.1540,  0.0956]]]],
-           grad_fn=<MkldnnConvolutionBackward>)
+              [-3.4967e-02, -4.3565e-02, -6.5006e-02,  ..., -8.8919e-02,
+               -1.3443e-01, -1.8066e-01],
+              [-2.2645e-02, -7.6100e-02, -1.3066e-01,  ..., -5.9316e-02,
+               -1.9493e-01, -1.1370e-01],
+              [-3.7421e-02, -7.6370e-02, -1.0176e-01,  ..., -2.0086e-01,
+               -1.5869e-01, -9.6589e-02]]]], grad_fn=<MkldnnConvolutionBackward>)
 
 

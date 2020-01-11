@@ -100,11 +100,13 @@ class Residual(nn.Module):
         self.res_func = res_func
    
     def forward(self, x):
+        # TODO this code can be refactored
         residuals = None
         for block in self.blocks:
-            block_type = type(block)
-            if block_type is nn.ModuleList:
+            there_are_sub_blocks = type(block) is nn.ModuleList
+            if there_are_sub_blocks:
                 if residuals is None: residuals = [None] * (len(self.blocks[0]))
+                # take only the first n residuals, where n is the len of the current block.
                 residuals = residuals[:len(block)]
                 residuals.reverse()
                 for i, layer in enumerate(block):
@@ -115,8 +117,10 @@ class Residual(nn.Module):
                         if self.res_func is not None:
                             x = self.res_func(x, res)
                         else: 
+                            # we haven't a .res_func, so we just pass the residual to the next layer
                             x = layer(x, res)
                     else:
+                        # no redisual, just pass the input
                         x = layer(x)
                     residuals[i] = x
 
@@ -125,7 +129,10 @@ class Residual(nn.Module):
                 x = block(x)
                 if self.shortcut is not None:
                     res = self.shortcut(res)
-                x = self.res_func(x, res)
+                if self.res_func is not None:
+                    x = self.res_func(x, res)
+                else: 
+                    x = layer(x, res)
 
         return x
 
