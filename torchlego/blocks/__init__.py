@@ -74,14 +74,14 @@ conv3x3 = partial(nn.Conv2d, kernel_size=3)
 conv3x3_bn = partial(conv_bn, conv=conv3x3)
 conv3x3_bn_act = partial(conv_bn_act, conv=conv3x3)
 
-class Cat(nn.Module):
+class InputForward(nn.Module):
     """
-    Simply concat all the outputs from the `.blocks` modules.
+    Pass the input to multiple modules and apply a aggregation function on the result
     """
-    def __init__(self, blocks, *args, **kwargs):
+    def __init__(self, blocks, aggr_func, *args, **kwargs):
         super().__init__()
         self.blocks = blocks
-        self.cat = partial(torch.cat, *args, **kwargs)
+        self.aggr_func = partial(aggr_func, *args, **kwargs)
         
     def forward(self, x):
         res =  []
@@ -89,8 +89,9 @@ class Cat(nn.Module):
             out = block(x)
             res.append(out)
             
-        return self.cat(res)
+        return self.aggr_func(res)
 
+Cat = partial(InputForward, aggr_func=lambda x: torch.cat(x))
 class Residual(nn.Module):
 
     def __init__(self, blocks, res_func:callable=None, shortcut:nn.Module=nn.Identity(), *args, **kwargs):
