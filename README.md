@@ -124,7 +124,31 @@ conv1x1(32, 64)
 
 
 
-### Cat
+### InputForward
+
+Many times we need to pass an input to multiple modules and do something with the results. This is went `InputForward` comes in handy! `aggr_func` takes as input a list where each entry is the output from one of the modules
+
+
+```python
+import torch
+from torchlego.blocks import InputForward, Lambda
+
+blocks = [Lambda(lambda x: x), Lambda(lambda x: x)]
+InputForward(blocks, aggr_func=lambda x: torch.tensor(x).sum())(torch.tensor([1]))
+```
+
+
+
+
+    tensor(2)
+
+
+
+![alt](https://github.com/FrancescoSaverioZuppichini/torchlego/blob/develop/doc/images/InputForward.png?raw=true)
+
+#### Cat
+
+An `InputForward` instance that concates the outputs
 
 
 ```python
