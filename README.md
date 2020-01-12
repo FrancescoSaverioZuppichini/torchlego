@@ -1,7 +1,7 @@
 
 # torchlego 
 
-**This is a early preview**
+**This is an early preview**
 
 High quality Neural Networks built with reausable blocks in PyTorch
 
@@ -16,8 +16,11 @@ This library aims to create new components to make developing and writing neural
 ## Installation
 
 ### pip
+You can install using pip
 
-- [ ] TODO
+```bash
+pip install git+https://github.com/FrancescoSaverioZuppichini/torchlego
+```
 
 ## Quick Tour
 
