@@ -1,6 +1,7 @@
-from dataclasses import dataclass, field
-import torch.nn as nn
+import torch
 import copy
+import torch.nn as nn
+from dataclasses import dataclass, field
 
 
 @dataclass
