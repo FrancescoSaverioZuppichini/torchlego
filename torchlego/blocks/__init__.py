@@ -31,7 +31,7 @@ class Conv2dPad(nn.Conv2d):
             self.padding = (self.kernel_size[0] // 2, self.kernel_size[1] // 2)
 
 
-def conv_bn_act(in_channels: int, out_channels:int, *args, conv=nn.Conv2d,  act=nn.ReLU, **kwargs):
+def conv_bn_act(in_channels: int, out_channels:int, *args, conv=nn.Conv2d,  act=nn.ReLU(), **kwargs):
     """
     Combines a conv layer, a batchnorm layer and an activation. 
     Useful to code faster and increases readibility. 
@@ -46,18 +46,20 @@ def conv_bn_act(in_channels: int, out_channels:int, *args, conv=nn.Conv2d,  act=
     :return: [description]
     :rtype: [type]
     """
-    modules = OrderedDict({
+    blocks = OrderedDict({
         'conv': conv(in_channels, out_channels, *args, **kwargs),
         'bn':  nn.BatchNorm2d(out_channels)
     })
 
-    if act is not None: modules['act'] = act()
-    return nn.Sequential(modules)
+    if act is not None: blocks['act'] = act
+    return nn.Sequential(blocks)
     
 
 
 conv1x1 = partial(nn.Conv2d, kernel_size=1)
 conv3x3 = partial(nn.Conv2d, kernel_size=3)
+conv1x1_bn = partial(conv_bn_act, conv=conv1x1, act=None)
+conv3x3_bn = partial(conv_bn_act, conv=conv3x3, act=None)
 conv1x1_bn_act = partial(conv_bn_act, conv=conv1x1)
 conv3x3_bn_act = partial(conv_bn_act, conv=conv3x3)
 
